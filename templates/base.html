@@ -1,4 +1,4 @@
-{% load static from staticfiles %}
+{% load static %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -22,7 +22,7 @@
 			<div class="welcome fl">欢迎来到天天生鲜!</div>
 			<div class="fr">
 
-                {% if is_login|default:'0' == '1' %}
+                {% if request.session.is_login|default:'0' == '1' %}
                     <div class="login_info fl">
                         欢迎您：<em>{{ user.uname }}</em>
                     </div>

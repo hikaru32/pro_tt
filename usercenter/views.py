@@ -3,6 +3,7 @@ from hashlib import sha1
 from usercenter.models import TTSXUser
 import datetime
 from django.http import JsonResponse, HttpResponseRedirect
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 # Create your views here.
@@ -23,8 +24,8 @@ def register(request):
 
                 u = TTSXUser.objects.create(uname=uname, upasswd=upasswd_sha, uemail=uemail)
                 u.save()
-                request.session['login_id'] = u.id   # 为了知道当前登录的用户是谁
-                request.session['is_login'] = '1'   # 为了知道当前有没有用户登录
+                request.session['login_id'] = u.id  # 为了知道当前登录的用户是谁
+                request.session['is_login'] = '1'  # 为了知道当前有没有用户登录
                 return redirect(reverse('usercenter:user_center', args=('info',)))
             else:
                 # 用户名已经存在，直接返回错误信息
@@ -36,7 +37,8 @@ def register(request):
 
 
 def login(request):
-    context = {'title': '天天生鲜 - 登录', 'show_error': 'False', 'uname': request.COOKIES.get('uname', ''), 'top': '0', 'sectop': '0'}
+    context = {'title': '天天生鲜 - 登录', 'show_error': 'False', 'uname': request.COOKIES.get('uname', ''), 'top': '0',
+               'sectop': '0'}
     request.session['is_login'] = '0'
     if request.method == 'POST':
         # print(request.POST)
@@ -54,9 +56,9 @@ def login(request):
                 tt_upasswd = u.upasswd
                 if tt_upasswd == upasswd_sha:
                     context['show_error'] = 'False'
-                    resp = redirect(reverse('usercenter:index'))
-                    request.session['login_id'] = u.id   # 记住登录用户
-                    request.session['is_login'] = '1'   # 记住登录状态
+                    resp = redirect(reverse('goods:index'))
+                    request.session['login_id'] = u.id  # 记住登录用户
+                    request.session['is_login'] = '1'  # 记住登录状态
                     # resp.set_cookie('login_id', u.id, expires=datetime.datetime.now() + datetime.timedelta(days=14))
                     # resp.delete_cookie('login_id')
                     if is_remember:
@@ -83,93 +85,35 @@ def user_center(request, tt_site):
         return render(request, 'usercenter/user_order.html', context=context)
     elif tt_site == 'addr':
         context['title'] = '天天生鲜 - 用户地址'
-        if request.method == "POST":
-            # 处理用户提交的收货地址表单
-            ushou = request.POST.get('user_shou')
-            uaddr = request.POST.get('user_addr')
-            ucode = request.POST.get('user_code')
-            uphone = request.POST.get('user_phone')
-            if ucode.isdigit() and uphone.isdigit() and len(ucode)==6 and len(uphone)==11:
-                u.ushou = ushou
-                u.uaddress = uaddr
-                u.ucode = ucode
-                u.uphone = uphone
-                u.save()
-            else:
-                context['error_checked'] = 'true'
         return render(request, 'usercenter/user_addr.html', context=context)
 
 
-
-def index(request):
-    context = {'title': '天天生鲜 - 首页', 'sectop': '0'}
-    is_login = request.session.get('is_login', '0')
-    context['is_login'] = is_login
-    u = get_object_or_404(TTSXUser, pk=request.session.get('login_id'))
-    context['user'] = u
-    return render(request, 'usercenter/index.html', context=context)
+def user(request):
+    tt_uid = request.session.get('login_id', 0)
+    u = get_object_or_404(TTSXUser, pk=tt_uid)
+    context = {'title': '天天生鲜 - 用户信息', 'uid': tt_uid, 'user': u, 'is_login': '1'}
+    return render(request, 'usercenter/user_center.html', context=context)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def user_info(request, tt_uid):
-#     # print(tt_uid)
-#     # print(request.path, '===========')
-#     context = {'title': '天天生鲜 - 用户信息', 'uid': tt_uid}
-#     u = get_object_or_404(TTSXUser, pk=tt_uid)
-#     context['user'] = u
-#     return render(request, 'usercenter/user_info.html', context=context)
-#
-#
-# def user_order(request, tt_uid):
-#     context = {'title': '天天生鲜 - 用户订单', 'uid': tt_uid}
-#     u = get_object_or_404(TTSXUser, pk=tt_uid)
-#     context['user'] = u
-#     return render(request, 'usercenter/user_order.html', context=context)
-#
-#
-# def user_addr(request, tt_uid):
-#     context = {'title': '天天生鲜 - 用户地址', 'uid': tt_uid}
-#     u = get_object_or_404(TTSXUser, pk=tt_uid)
-#     context['user'] = u
-#     return render(request, 'usercenter/user_addr.html', context=context)
+def handle(request):
+    # print(request.POST, '===================================')
+    res = {'is_error': '0'}
+    user_shou = request.POST.get("user_shou")
+    user_addr = request.POST.get("user_addr")
+    user_code = request.POST.get("user_code")
+    user_phone = request.POST.get("user_phone")
+    if user_shou and user_addr and user_code and user_phone and user_code.isdigit() and user_phone.isdigit() and len(
+            user_code) == 6 and len(user_phone) == 11:
+        u = get_object_or_404(TTSXUser, pk=request.session.get('login_id'))
+        u.ushou = user_shou
+        u.uaddress = user_addr
+        u.ucode = user_code
+        u.uphone = user_phone
+        u.save()
+        res['ushou'] = user_shou
+        res['uaddr'] = user_addr
+        res['ucode'] = user_code
+        res['uphone'] = user_phone
+    else:
+        res['is_error'] = '1'
+    return JsonResponse(res)

@@ -16,10 +16,9 @@ from django.shortcuts import redirect, reverse
 #                 return redirect(reverse('usercenter:login'))
 
 
-
-
 class LoginCheck(MiddlewareMixin):
     def process_request(self, request):
+        # pass
         rpath = request.path
         res = re.match(r'/user/(info|order|addr)/$', rpath)
         if res:

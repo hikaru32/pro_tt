@@ -1,8 +1,21 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block body %}
+{% block head %}
 
+    <script>
+        $(function () {
+
+        })
+
+    </script>
+
+
+{% endblock %}
+
+
+
+{% block body %}
 
 <div class="search_bar clearfix">
         <a href="{% url 'goods:index' %}" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>

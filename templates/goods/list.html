@@ -56,8 +56,7 @@
                     }
                 }else{    {# 点击页码 #}
                     get_order_info($(this).index(), order_name);
-                    $(this).addClass("active");
-                    $(this).siblings().removeClass("active");
+                    $(this).addClass("active").siblings().removeClass("active");
                 }
             });
 

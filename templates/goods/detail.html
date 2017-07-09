@@ -5,7 +5,33 @@
 
     <script>
         $(function () {
+            var num = 1;
+            $("#amount").blur(function () {
+                {# 设置数量 #}
+                num = parseInt($(this).val());
+                if(isNaN(num)){
+                    num = 1
+                }
+                if(num < 1){
+                    num = 1
+                }
+                $(this).val(num);
 
+                {# 计算总价 #}
+                $(".total em").text((num*{{ goods.price }}).toFixed(2)+"元")
+            });
+
+            {# 数量增加按钮 #}
+            $(".add").click(function () {
+                num = parseInt($("#amount").val()) + 1;
+                $("#amount").val(num).blur()
+            });
+
+            {# 数量减少按钮 #}
+            $(".minus").click(function () {
+                num = parseInt($("#amount").val()) - 1;
+                $("#amount").val(num).blur()
+            });
         })
 
     </script>
@@ -76,7 +102,7 @@
 			<div class="goods_num clearfix">
 				<div class="num_name fl">数 量：</div>
 				<div class="num_add fl">
-					<input type="text" class="num_show fl" value="1">
+					<input type="text" class="num_show fl" value="1" id="amount">
 					<a href="javascript:;" class="add fr">+</a>
 					<a href="javascript:;" class="minus fr">-</a>
 				</div>

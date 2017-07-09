@@ -5,8 +5,10 @@
 
     <script>
         $(function () {
+            var $amount = $("#amount");
+
             var num = 1;
-            $("#amount").blur(function () {
+            $amount.blur(function () {
                 {# 设置数量 #}
                 num = parseInt($(this).val());
                 if(isNaN(num)){
@@ -23,14 +25,14 @@
 
             {# 数量增加按钮 #}
             $(".add").click(function () {
-                num = parseInt($("#amount").val()) + 1;
-                $("#amount").val(num).blur()
+                num = parseInt($amount.val()) + 1;
+                $amount.val(num).blur()
             });
 
             {# 数量减少按钮 #}
             $(".minus").click(function () {
-                num = parseInt($("#amount").val()) - 1;
-                $("#amount").val(num).blur()
+                num = parseInt($amount.val()) - 1;
+                $amount.val(num).blur()
             });
         })
 

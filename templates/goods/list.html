@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load tag_utils %}
 
 {% block head %}
     <style>
@@ -16,47 +17,66 @@
             var $pagenation = $(".pagenation a");
 
             var order_name = 'default';
+            var cur_page = 1;
 
             {# 还未完成， 点击按价格排序后下面的序号还得重拍，也就是逻辑还得重做 —————— 已完成 #}
-            $("#price_btn").click(function () {
-                order_name = 'price';
-                get_order_info(1, 'price');
-                $(this).addClass("active").siblings().removeClass("active");
-                $pagenation.eq(1).addClass("active").siblings().removeClass("active");
+            $("#default_btn").click(function () {
+                click_btn($(this), 'default')
             });
 
-            $("#default_btn").click(function () {
-                order_name = 'default';
-                get_order_info(1, 'default');
-                $(this).addClass("active").siblings().removeClass("active");
-                $pagenation.eq(1).addClass("active").siblings().removeClass("active");
+            $("#price_btn").click(function () {
+                click_btn($(this), 'price')
             });
 
             $("#hot_btn").click(function () {
-                order_name = 'hot';
-                get_order_info(1, 'hot');
-                $(this).addClass("active").siblings().removeClass("active");
-                $pagenation.eq(1).addClass("active").siblings().removeClass("active");
+                click_btn($(this), 'hot')
             });
 
             $(".pagenation").delegate("a", "click", function () {
+                npn = $(".pagenation .active").index();
+{#                alert(npn)#}
                 if ($(this).index() === 0){   {# 点击上一页 #}
-                    npn = $(".pagenation .active").index();
                     if(npn > 1){
                         get_order_info(npn-1, order_name);
                         $pagenation.eq(npn).removeClass("active");
                         $pagenation.eq(npn-1).addClass("active");
+                        npn--
                     }
                 }else if ($(this).index() === $pagenation.size()-1){   {# 点击下一页 #}
-                    npn = $(".pagenation .active").index();
-                    if(npn < $(this).parent().children().size()-2){
+                    if(npn < {{ loop_num }}){
                         get_order_info(npn+1, order_name);
-                        $pagenation.eq(npn).removeClass("active");
-                        $pagenation.eq(npn+1).addClass("active");
+                        if(npn%5 === 0){
+                            $pagenation.eq(npn).removeClass("active");
+                            $pagenation.eq(1).addClass("active");
+                        }else {
+                            $pagenation.eq(npn).removeClass("active");
+                            $pagenation.eq(npn+1).addClass("active");
+                        }
+                        npn++;
                     }
                 }else{    {# 点击页码 #}
-                    get_order_info($(this).index(), order_name);
+                    get_order_info($(this).text(), order_name);
                     $(this).addClass("active").siblings().removeClass("active");
+                    npn = $(".pagenation .active").index();
+                }
+                if(npn === {{ loop_num }}){
+                    $("#np").css({"visibility": "hidden"})
+                }else {
+                    $("#np").css({"visibility": "visible"})
+                }
+                if(npn === 1){
+                    $("#pp").css({"visibility": "hidden"})
+                }else {
+                    $("#pp").css({"visibility": "visible"})
+                }
+
+                {# 如果页码点击到分页的最后一个，则将分页页码重置 —— 第一个页码重置为之前的最后一位页码 #}
+                if(npn%5 === 0){
+                    for(var i=1; i <= 5; i++){
+                        $pagenation.eq(i).text(npn+i-1)
+
+                    }
+
                 }
             });
 
@@ -76,6 +96,15 @@
                     });
                     $(".goods_type_list").html(content);
                 });
+            }
+
+            function click_btn(who, how) {
+                order_name = how;
+                get_order_info(1, how);
+                who.addClass("active").siblings().removeClass("active");
+                $pagenation.eq(1).addClass("active").siblings().removeClass("active");
+                $("#np").css({"visibility": "visible"});
+                $("#pp").css({"visibility": "hidden"});
             }
         });
     </script>
@@ -166,15 +195,36 @@
 
 
 			<div class="pagenation">
-                <a ><上一页</a>
-                {% for pindex in goods.paginator.page_range %}
-                    {% if pindex == 1 %}
-                        <a class="active">{{ pindex }}</a>
-                    {% else %}
-                        <a >{{ pindex }}</a>
-                    {% endif %}
-                {% endfor %}
-                <a >下一页></a>
+                <a id="pp" style="visibility: hidden"><上一页</a>
+                {% if loop_num > 6 %}
+
+                    {% for i in 5|ntl %}
+                        {% if forloop.first %}
+                            <a class="active">{{ forloop.counter }}</a>
+                        {% else %}
+                            <a >{{ forloop.counter }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                {% else %}
+
+                    {% for j in loop_num|ntl %}
+                        {% if forloop.first %}
+                            <a class="active">{{ forloop.counter }}</a>
+                        {% else %}
+                            <a >{{ forloop.counter }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                {% endif %}
+{#                {% for pindex in loop_num %}#}
+{#                    {% if forloop.first %}#}
+{#                        <a class="active">{{ forloop.counter }}</a>#}
+{#                    {% else %}#}
+{#                        <a >{{ forloop.counter }}</a>#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+                <a id="np">下一页></a>
 			</div>
 
 

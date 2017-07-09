@@ -8,6 +8,8 @@ from django.forms.models import model_to_dict
 
 
 # Create your views here.
+goods_num_per_page = 1
+
 def index(request):
     context = {'title': '天天生鲜 - 首页', 'sectop': '0',
                'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id'))}
@@ -24,12 +26,14 @@ def index(request):
 def goods_list(request, cat):
     category = get_object_or_404(GoodsCategory, pk=cat)
     new_list = category.goodsinfo_set.order_by('-id')[:2]
-    goods = category.goodsinfo_set.order_by('-id')
-    paginator = Paginator(goods, 3)
-    page = paginator.page(1)
+    goods = category.goodsinfo_set.order_by('-id')[:goods_num_per_page]
+    loop_num = (len(category.goodsinfo_set.order_by('-id'))-1)//goods_num_per_page + 1
+    print(loop_num)
+    # paginator = Paginator(goods, 4)
+    # page = paginator.page(1)
     context = {'title': '天天生鲜 - 分类', 'sectop': '0',
                'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')), 'category': category,
-               'new_list': new_list, 'goods': page}
+               'new_list': new_list, 'goods': goods, 'loop_num':loop_num}
     return render(request, 'goods/list.html', context=context)
 
 
@@ -37,13 +41,13 @@ def goods_order(request):
     pn = int(request.GET.get('pn'))
     cat_id = request.GET.get('cat')
     how = request.GET.get('how')
-    # print(pn,'=====',how,'=====')
+    print(pn,'=====',how,'=====')
     if how == 'price':
-        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-price')[3*(pn-1):3*pn]
+        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-price')[goods_num_per_page*(pn-1):goods_num_per_page*pn]
     elif how == 'default':
-        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-id')[3*(pn-1):3*pn]
+        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-id')[goods_num_per_page*(pn-1):goods_num_per_page*pn]
     else:
-        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-click')[3 * (pn - 1):3 * pn]
+        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-click')[goods_num_per_page*(pn - 1):goods_num_per_page*pn]
     price_list = []
     for price in price_qur:
         mdict = model_to_dict(price, fields=['id', 'name', 'price', 'pic', 'unit'])

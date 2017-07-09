@@ -36,15 +36,27 @@
                 npn = $(".pagenation .active").index();
 {#                alert(npn)#}
                 if ($(this).index() === 0){   {# 点击上一页 #}
-                    if(npn > 1){
-                        get_order_info(npn-1, order_name);
-                        $pagenation.eq(npn).removeClass("active");
-                        $pagenation.eq(npn-1).addClass("active");
-                        npn--
+                    if(cur_page > 1){
+                        get_order_info(cur_page-1, order_name);
+                        if(npn%5 === 1){
+                            $pagenation.eq(npn).removeClass("active");
+                            $pagenation.eq(5).addClass("active");
+                        }else {
+                            $pagenation.eq(npn).removeClass("active");
+                            $pagenation.eq(npn-1).addClass("active");
+                        }
+                        npn--;
+                        cur_page--;
+                        {# 如果页码点击到分页的第一个，则将分页页码重置 —— 最后一个页码重置为之前的第一位页码 #}
+                        if(cur_page%5 === 0){
+                            for(var j=1; j <= 5; j++){
+                                $pagenation.eq(j).text(cur_page+j-5)
+                            }
+                        }
                     }
                 }else if ($(this).index() === $pagenation.size()-1){   {# 点击下一页 #}
-                    if(npn < {{ loop_num }}){
-                        get_order_info(npn+1, order_name);
+                    if(cur_page < {{ loop_num }}){
+                        get_order_info(cur_page+1, order_name);
                         if(npn%5 === 0){
                             $pagenation.eq(npn).removeClass("active");
                             $pagenation.eq(1).addClass("active");
@@ -53,31 +65,33 @@
                             $pagenation.eq(npn+1).addClass("active");
                         }
                         npn++;
+                        cur_page++;
+                        {# 如果页码点击到分页的最后一个，则将分页页码重置 —— 第一个页码重置为之前的最后一位页码 #}
+                        if(cur_page%5 === 1){
+                            for(var i=1; i <= 5; i++){
+                                $pagenation.eq(i).text(cur_page+i-1)
+                            }
+                        }
                     }
                 }else{    {# 点击页码 #}
                     get_order_info($(this).text(), order_name);
                     $(this).addClass("active").siblings().removeClass("active");
                     npn = $(".pagenation .active").index();
+                    cur_page = parseInt($(this).text());
                 }
-                if(npn === {{ loop_num }}){
+                if(cur_page === {{ loop_num }}){
                     $("#np").css({"visibility": "hidden"})
                 }else {
                     $("#np").css({"visibility": "visible"})
                 }
-                if(npn === 1){
+                if(cur_page === 1){
                     $("#pp").css({"visibility": "hidden"})
                 }else {
                     $("#pp").css({"visibility": "visible"})
                 }
 
                 {# 如果页码点击到分页的最后一个，则将分页页码重置 —— 第一个页码重置为之前的最后一位页码 #}
-                if(npn%5 === 0){
-                    for(var i=1; i <= 5; i++){
-                        $pagenation.eq(i).text(npn+i-1)
 
-                    }
-
-                }
             });
 
             function get_order_info(pn, how) {

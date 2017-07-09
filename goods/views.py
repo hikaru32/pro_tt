@@ -24,7 +24,7 @@ def index(request):
 def goods_list(request, cat):
     category = get_object_or_404(GoodsCategory, pk=cat)
     new_list = category.goodsinfo_set.order_by('-id')[:2]
-    goods = category.goodsinfo_set.all()
+    goods = category.goodsinfo_set.order_by('-id')
     paginator = Paginator(goods, 3)
     page = paginator.page(1)
     context = {'title': '天天生鲜 - 分类', 'sectop': '0',
@@ -33,19 +33,31 @@ def goods_list(request, cat):
     return render(request, 'goods/list.html', context=context)
 
 
-def goods_price(request):
-    price_qur = get_object_or_404(GoodsCategory, pk=int(request.GET.get('cat'))).goodsinfo_set.order_by('-price')
+def goods_order(request):
+    pn = int(request.GET.get('pn'))
+    cat_id = request.GET.get('cat')
+    how = request.GET.get('how')
+    # print(pn,'=====',how,'=====')
+    if how == 'price':
+        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-price')[3*(pn-1):3*pn]
+    elif how == 'default':
+        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-id')[3*(pn-1):3*pn]
+    else:
+        price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-click')[3 * (pn - 1):3 * pn]
     price_list = []
     for price in price_qur:
-        mdict = model_to_dict(price, fields=['name', 'price', 'pic', 'unit'])
+        mdict = model_to_dict(price, fields=['id', 'name', 'price', 'pic', 'unit'])
         mdict['pic'] = mdict['pic'].url
         price_list.append(mdict)
+    # print(price_list)
     return JsonResponse({'goods': price_list})
 
 
 def detail(request, gid):
+    goods = get_object_or_404(GoodsInfo, pk=int(gid))
+    new_list = goods.category.goodsinfo_set.order_by('-id')[:2]
     context = {'title': '天天生鲜 - 分类', 'sectop': '0',
-               'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id'))}
+               'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')), 'goods':goods, 'new_list':new_list}
     return render(request, 'goods/detail.html', context=context)
 
 

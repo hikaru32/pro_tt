@@ -6,18 +6,68 @@
         .sort_bar a{
             cursor: pointer;
         }
+        .pagenation a{
+            cursor: pointer;
+        }
     </style>
 
     <script>
         $(function () {
+            var $pagenation = $(".pagenation a");
+
+            var order_name = 'default';
+
+            {# 还未完成， 点击按价格排序后下面的序号还得重拍，也就是逻辑还得重做 —————— 已完成 #}
             $("#price_btn").click(function () {
-                $.get('{% url "goods:price_list" %}',{'cat': "{{ category.id }}"} , function(data){
+                order_name = 'price';
+                get_order_info(1, 'price');
+                $(this).addClass("active").siblings().removeClass("active");
+                $pagenation.eq(1).addClass("active").siblings().removeClass("active");
+            });
+
+            $("#default_btn").click(function () {
+                order_name = 'default';
+                get_order_info(1, 'default');
+                $(this).addClass("active").siblings().removeClass("active");
+                $pagenation.eq(1).addClass("active").siblings().removeClass("active");
+            });
+
+            $("#hot_btn").click(function () {
+                order_name = 'hot';
+                get_order_info(1, 'hot');
+                $(this).addClass("active").siblings().removeClass("active");
+                $pagenation.eq(1).addClass("active").siblings().removeClass("active");
+            });
+
+            $(".pagenation").delegate("a", "click", function () {
+                if ($(this).index() === 0){   {# 点击上一页 #}
+                    npn = $(".pagenation .active").index();
+                    if(npn > 1){
+                        get_order_info(npn-1, order_name);
+                        $pagenation.eq(npn).removeClass("active");
+                        $pagenation.eq(npn-1).addClass("active");
+                    }
+                }else if ($(this).index() === $pagenation.size()-1){   {# 点击下一页 #}
+                    npn = $(".pagenation .active").index();
+                    if(npn < $(this).parent().children().size()-2){
+                        get_order_info(npn+1, order_name);
+                        $pagenation.eq(npn).removeClass("active");
+                        $pagenation.eq(npn+1).addClass("active");
+                    }
+                }else{    {# 点击页码 #}
+                    get_order_info($(this).index(), order_name);
+                    $(this).addClass("active");
+                    $(this).siblings().removeClass("active");
+                }
+            });
+
+            function get_order_info(pn, how) {
+                $.get('{% url "goods:order_list" %}',{'cat': "{{ category.id }}", 'pn': pn, 'how': how} , function(data){
                     var content = '';
                     $.each(data.goods, function (index, item) {
-                        console.log(item.name);
                         content += '<li>' +
-                        '<a href="detail.html">' + '<img src="/static/' + item.pic + '">' + '</a>' +
-                        '<h4><a href="detail.html">' + item.name + '</a></h4>' +
+                        '<a href="' + '/goods/detail/' + item.id + '">' + '<img src="/static/' + item.pic + '">' + '</a>' +
+                        '<h4><a href="' + '/goods/detail/' + item.id + '">' + item.name + '</a></h4>' +
                         '<div class="operate">' +
                             '<span class="prize">￥' + item.price + '</span>' +
                             '<span class="unit">' + item.price + '/' + item.unit + '</span>' +
@@ -25,10 +75,9 @@
                         '</div>' +
                     '</li>'
                     });
-{#                    console.log(content);#}
                     $(".goods_type_list").html(content);
                 });
-            });
+            }
         });
     </script>
 {% endblock %}
@@ -38,22 +87,22 @@
 {% block body %}
 
     <div class="search_bar clearfix">
-		<a href="{% url 'goods:index' %}" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
-		<div class="search_con fl">
-			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
-			<input type="button" class="input_btn fr" name="" value="搜索">
-		</div>
-		<div class="guest_cart fr">
-			<a href="#" class="cart_name fl">我的购物车</a>
-			<div class="goods_count fl" id="show_count">1</div>
-		</div>
-	</div>
+        <a href="{% url 'goods:index' %}" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
+        <div class="search_con fl">
+            <input type="text" class="input_text fl" name="" placeholder="搜索商品">
+            <input type="button" class="input_btn fr" name="" value="搜索">
+        </div>
+        <div class="guest_cart fr">
+            <a href="#" class="cart_name fl">我的购物车</a>
+            <div class="goods_count fl" id="show_count">1</div>
+        </div>
+    </div>
 
 	<div class="navbar_con">
 		<div class="navbar clearfix">
 			<div class="subnav_con fl">
-				<h1>全部商品分类</h1>	
-				<span></span>			
+				<h1>全部商品分类</h1>
+				<span></span>
 				<ul class="subnav">
 					<li><a href="{% url 'goods:list' 1 %}" class="fruit">新鲜水果</a></li>
 					<li><a href="{% url 'goods:list' 2 %}" class="seafood">海鲜水产</a></li>
@@ -114,21 +163,22 @@
                         </div>
                     </li>
                 {% endfor %}
-
-
-
 			</ul>
 
+
 			<div class="pagenation">
-                <a href="#"><上一页</a>
+                <a ><上一页</a>
                 {% for pindex in goods.paginator.page_range %}
-                    <a href="#">{{ pindex }}</a>
+                    {% if pindex == 1 %}
+                        <a class="active">{{ pindex }}</a>
+                    {% else %}
+                        <a >{{ pindex }}</a>
+                    {% endif %}
                 {% endfor %}
-                <a href="#">下一页></a>
-{#				<a href="#"><上一页</a>#}
-{#				<a href="#" class="active">1</a>#}
-{#				<a href="#">下一页></a>#}
+                <a >下一页></a>
 			</div>
+
+
 		</div>
 	</div>
 

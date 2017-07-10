@@ -19,13 +19,16 @@
             var order_name = 'default';
             var cur_page = 1;
 
+            var price_o = '1';
+
             {# 还未完成， 点击按价格排序后下面的序号还得重拍，也就是逻辑还得重做 —————— 已完成 #}
             $("#default_btn").click(function () {
                 click_btn($(this), 'default')
             });
 
             $("#price_btn").click(function () {
-                click_btn($(this), 'price')
+                click_btn($(this), price_o);
+                price_o *= -1;
             });
 
             $("#hot_btn").click(function () {

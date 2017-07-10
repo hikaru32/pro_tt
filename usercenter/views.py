@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from hashlib import sha1
 from usercenter.models import TTSXUser
+from goods.models import GoodsInfo
 import datetime
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -57,6 +58,7 @@ def login(request):
                 if tt_upasswd == upasswd_sha:
                     context['show_error'] = 'False'
                     resp = redirect(reverse('goods:index'))
+                    resp.delete_cookie('wids')
                     request.session['login_id'] = u.id  # 记住登录用户
                     request.session['is_login'] = '1'  # 记住登录状态
                     # resp.set_cookie('login_id', u.id, expires=datetime.datetime.now() + datetime.timedelta(days=14))
@@ -78,6 +80,14 @@ def user_center(request, tt_site):
     u = get_object_or_404(TTSXUser, pk=tt_uid)
     context = {'uid': tt_uid, 'user': u, 'is_login': '1'}
     if tt_site == 'info':
+        # 获取用户最近浏览的物品 id
+        wids_list = request.COOKIES.get('wids', '').split(',')
+        if '' in wids_list:
+            wids_list.remove('')
+        goods_looked_list = []
+        for i in wids_list:
+            goods_looked_list.append(get_object_or_404(GoodsInfo, pk=int(i)))
+        context['goods_list'] = goods_looked_list
         context['title'] = '天天生鲜 - 用户信息'
         return render(request, 'usercenter/user_info.html', context=context)
     elif tt_site == 'order':

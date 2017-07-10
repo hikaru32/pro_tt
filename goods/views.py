@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from django.forms.models import model_to_dict
 
 # Create your views here.
-goods_num_per_page = 1
+goods_num_per_page = 3
 
 
 def index(request):
@@ -71,7 +71,16 @@ def detail(request, gid):
     context = {'title': '天天生鲜 - 分类', 'sectop': '0',
                'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')),
                'goods': goods, 'new_list': new_list}
-    return render(request, 'goods/detail.html', context=context)
+    response = render(request, 'goods/detail.html', context=context)
+    wids_list = request.COOKIES.get('wids', '').split(',')
+    if gid in wids_list:
+        wids_list.remove(gid)
+    wids_list.insert(0, gid)
+    if len(wids_list) > 5:
+        wids_list.pop()
+    print(wids_list, '=>>>'*30)
+    response.set_cookie('wids',','.join(wids_list),max_age=60*60*24*7)
+    return response
 
 
 def dimg(request):

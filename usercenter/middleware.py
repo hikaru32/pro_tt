@@ -20,9 +20,11 @@ class LoginCheck(MiddlewareMixin):
     def process_request(self, request):
         # pass
         rpath = request.path
-        res = re.match(r'/user/(info|order|addr)/$', rpath)
+        res = re.match(r'(^/user/(info|order|addr)/$)', rpath)
         if res:
             is_login = request.session.get('is_login', '0')
             if is_login == '0':  # 如果当前请求的用户中心和登录的用户不是一个，则返回已登录的用户中心
-                # print('**********++++++++++++')
-                return redirect(reverse('usercenter:login'))
+                print(rpath, '<<<//*'*20)
+                response = redirect(reverse('usercenter:login'))
+                response.set_cookie('ref_path', rpath)
+                return response

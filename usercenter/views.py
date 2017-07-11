@@ -57,7 +57,8 @@ def login(request):
                 tt_upasswd = u.upasswd
                 if tt_upasswd == upasswd_sha:
                     context['show_error'] = 'False'
-                    resp = redirect(reverse('goods:index'))
+                    ref_path = request.COOKIES.get('ref_path', '/')   # 获取跳转到登录页前的地址
+                    resp = redirect(ref_path)
                     resp.delete_cookie('wids')
                     request.session['login_id'] = u.id  # 记住登录用户
                     request.session['is_login'] = '1'  # 记住登录状态

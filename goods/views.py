@@ -11,8 +11,12 @@ goods_num_per_page = 3
 
 
 def index(request):
-    context = {'title': '天天生鲜 - 首页', 'sectop': '0',
-               'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id'))}
+    is_login = request.session.get('is_login', '0')
+    if is_login == '1':
+        context = {'title': '天天生鲜 - 首页', 'sectop': '0',
+                   'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id'))}
+    else:
+        context = {'title': '天天生鲜 - 首页', 'sectop': '0'}
     # 每一类商品：最新 + 点击最多
     goods_list = []
     for category in GoodsCategory.objects.all():
@@ -24,16 +28,21 @@ def index(request):
 
 
 def goods_list(request, cat):
+    is_login = request.session.get('is_login', '0')
     category = get_object_or_404(GoodsCategory, pk=cat)
     new_list = category.goodsinfo_set.order_by('-id')[:2]
     goods = category.goodsinfo_set.order_by('-id')[:goods_num_per_page]
     loop_num = (len(category.goodsinfo_set.order_by('-id')) - 1) // goods_num_per_page + 1
-    print(loop_num)
+    # print(loop_num)
     # paginator = Paginator(goods, 4)
     # page = paginator.page(1)
-    context = {'title': '天天生鲜 - 分类', 'sectop': '0',
-               'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')), 'category': category,
-               'new_list': new_list, 'goods': goods, 'loop_num': loop_num}
+    if is_login == '1':
+        context = {'title': '天天生鲜 - 分类', 'sectop': '0',
+                   'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')), 'category': category,
+                   'new_list': new_list, 'goods': goods, 'loop_num': loop_num}
+    else:
+        context = {'title': '天天生鲜 - 分类', 'sectop': '0', 'category': category,
+                   'new_list': new_list, 'goods': goods, 'loop_num': loop_num}
     return render(request, 'goods/list.html', context=context)
 
 
@@ -41,7 +50,7 @@ def goods_order(request):
     pn = int(request.GET.get('pn'))
     cat_id = request.GET.get('cat')
     how = str(request.GET.get('how'))
-    print(pn, '=====', how, '=====')
+    # print(pn, '=====', how, '=====')
     if how == '-1':
         price_qur = get_object_or_404(GoodsCategory, pk=int(cat_id)).goodsinfo_set.order_by('-price')[
                     goods_num_per_page * (pn - 1):goods_num_per_page * pn]
@@ -64,13 +73,19 @@ def goods_order(request):
 
 
 def detail(request, gid):
+    is_login = request.session.get('is_login', '0')
+    print(is_login,'is_login===='*6)
     goods = get_object_or_404(GoodsInfo, pk=int(gid))
     goods.click += 1
     goods.save()
     new_list = goods.category.goodsinfo_set.order_by('-id')[:2]
-    context = {'title': '天天生鲜 - 分类', 'sectop': '0',
-               'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')),
-               'goods': goods, 'new_list': new_list}
+    if is_login == '1':
+        context = {'title': '天天生鲜 - 分类', 'sectop': '0',
+                   'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')),
+                   'goods': goods, 'new_list': new_list}
+    else:
+        context = {'title': '天天生鲜 - 分类', 'sectop': '0',
+                   'goods': goods, 'new_list': new_list}
     response = render(request, 'goods/detail.html', context=context)
     wids_list = request.COOKIES.get('wids', '').split(',')
     if gid in wids_list:
@@ -78,9 +93,10 @@ def detail(request, gid):
     wids_list.insert(0, gid)
     if len(wids_list) > 5:
         wids_list.pop()
-    print(wids_list, '=>>>'*30)
-    response.set_cookie('wids',','.join(wids_list),max_age=60*60*24*7)
+    # print(wids_list, '=>>>' * 30)
+    response.set_cookie('wids', ','.join(wids_list), max_age=60 * 60 * 24 * 7)
     return response
+
 
 
 def dimg(request):

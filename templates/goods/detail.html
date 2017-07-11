@@ -34,6 +34,10 @@
                 num = parseInt($amount.val()) - 1;
                 $amount.val(num).blur()
             });
+
+            function add_cart() {
+                alert("ok")
+            }
         })
 
     </script>
@@ -112,7 +116,7 @@
 			<div class="total">总价：<em>{{ goods.price }}元</em></div>
 			<div class="operate_btn">
 				<a href="javascript:;" class="buy_btn">立即购买</a>
-				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>
+				<a href="javascript:add_cart();" class="add_cart" id="add_cart">加入购物车</a>
 			</div>
 		</div>
 	</div>

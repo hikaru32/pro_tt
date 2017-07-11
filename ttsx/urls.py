@@ -19,6 +19,7 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^', include('goods.urls')),
     url(r'^user/', include('usercenter.urls')),
+    url(r'^cart/', include('cart.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^tinymce/', include('tinymce.urls')),
 

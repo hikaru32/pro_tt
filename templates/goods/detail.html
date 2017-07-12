@@ -54,6 +54,16 @@
             }
         }
 
+        function go_to_shop(gid) {
+            if ('{{ request.session.is_login }}' === '1'){  {# 登录了 #}
+                {# 购物车数字加一，并往数据库添加一条数据 #}
+{#                location.href = #}
+            }else {    {# 没登录 #}
+                {# 先跳转登录界面，然后在执行上面登录后的操作 #}
+                location.href = '{% url "usercenter:login" %}'
+            }
+        }
+
     </script>
 
 
@@ -129,7 +139,7 @@
 			</div>
 			<div class="total">总价：<em>{{ goods.price }}元</em></div>
 			<div class="operate_btn">
-				<a href="javascript:;" class="buy_btn">立即购买</a>
+				<a href="javascript:go_to_shop({{ goods.id }});" class="buy_btn">立即购买</a>
 				<a href="javascript:add_cart({{ goods.id }});" class="add_cart" id="add_cart">加入购物车</a>
 			</div>
 		</div>

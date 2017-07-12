@@ -22,7 +22,7 @@ class LoginCheck(MiddlewareMixin):
         rpath = request.path
         exclude_path = ['/user/register/', '/user/login/', '/user/handle/',
                         '/cart/add_cart/']
-        redirect_path = ['/user/info/', '/user/order/', '/user/addr/']
+        redirect_path = ['/user/info/', '/user/order/', '/user/addr/', '/cart/']
 
         # res = re.match(r'(^/user/(info|order|addr)/$)', rpath)
         # if res:

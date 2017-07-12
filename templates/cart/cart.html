@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <script>
+        $(function () {
+            total();
+            change_count();
+        });
+
+
+        {# 计算总价和总数 #}
+        function total() {
+
+            var $parent = $(".cart_list_td");
+            var total_count = $parent.size();
+            var total_price = 0;
+
+            $parent.each(function () {
+                var count = parseInt($(this).children('.col06').find('.num_show').val());
+                var price = parseFloat($(this).children('.col05').text());
+                var total_one = count*price;
+                $(this).children('.col07').text(total_one.toFixed(2)+'元');
+                total_price += total_one;
+            });
+
+            $(".settlements .col03 em").text(total_price.toFixed(2));
+
+            $(".total_count em").text(total_count);
+            $(".settlements .col03 b").text(total_count);
+        }
+
+        {# 更改数量 #}
+        function change_count() {
+            $(".cart_list_td").each(function () {
+                $(this).children('.col06').find('.num_show').blur(function () {
+                    var num = parseInt($(this).val());
+                    if (num < 1){
+                        num = 1
+                    }
+                    $(this).val(num);
+                    total()
+                });
+
+                $(this).children('.col06').find('.add').click(function () {
+                    $(this).siblings('.num_show').val(parseInt($(this).siblings('.num_show').val())+1);
+                    $(this).siblings('.num_show').blur()
+                });
+
+                $(this).children('.col06').find('.minus').click(function () {
+                    $(this).siblings('.num_show').val(parseInt($(this).siblings('.num_show').val())-1);
+                    $(this).siblings('.num_show').blur()
+                });
+
+                $(this).children(".col08").find("a").click(function () {
+                    $(this).parent().parent().remove();
+                    total()
+                })
+            })
+        }
+    </script>
+{% endblock %}
+
+
+{% block body %}
+	<div class="total_count">全部商品<em>2</em>件</div>
+	<ul class="cart_list_th clearfix">
+		<li class="col01">商品名称</li>
+		<li class="col02">商品单位</li>
+		<li class="col03">商品价格</li>
+		<li class="col04">数量</li>
+		<li class="col05">小计</li>
+		<li class="col06">操作</li>
+	</ul>
+
+    {% for goods in goods_list %}
+    	<ul class="cart_list_td clearfix">
+            <li class="col01"><input type="checkbox" name="" checked></li>
+            <li class="col02"><img src="/static/{{ goods.goods_info.pic }}"></li>
+            <li class="col03">{{ goods.goods_info.name }}<br><em>{{ goods.goods_info.price }}元/{{ goods.goods_info.unit }}</em></li>
+            <li class="col04">{{ goods.goods_info.unit }}</li>
+            <li class="col05">{{ goods.goods_info.price }}</li>
+            <li class="col06">
+                <div class="num_add">
+                    <a href="javascript:;" class="add fl">+</a>
+                    <input type="text" class="num_show fl" value="{{ goods.goods_count }}">
+                    <a href="javascript:;" class="minus fl">-</a>
+                </div>
+            </li>
+            <li class="col07"></li>
+            <li class="col08"><a href="javascript:;">删除</a></li>
+        </ul>
+    {% endfor %}
+
+
+
+	<ul class="settlements">
+		<li class="col01"><input type="checkbox" name="" checked=""></li>
+		<li class="col02">全选</li>
+		<li class="col03">合计(不含运费)：<span>¥</span><em>32.00</em><br>共计<b>2</b>件商品</li>
+		<li class="col04"><a href="place_order.html">去结算</a></li>
+	</ul>
+
+{% endblock %}

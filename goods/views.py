@@ -1,10 +1,12 @@
 from django.shortcuts import render, get_object_or_404
 from usercenter.models import TTSXUser
 from goods.models import GoodsInfo, GoodsCategory, PicTest
+from django.db.models import Sum
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
 from django.forms.models import model_to_dict
+from cart.models import CartInfo
 
 # Create your views here.
 goods_num_per_page = 3
@@ -13,8 +15,10 @@ goods_num_per_page = 3
 def index(request):
     is_login = request.session.get('is_login', '0')
     if is_login == '1':
-        context = {'title': '天天生鲜 - 首页', 'sectop': '0',
-                   'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id'))}
+        user = get_object_or_404(TTSXUser, pk=request.session.get('login_id'))
+        # 通过聚合函数，获取同一用户所有的商品数
+        cart_amount = CartInfo.objects.filter(user=user).aggregate(Sum('count')).get('count__sum')
+        context = {'title': '天天生鲜 - 首页', 'sectop': '0', 'user': user, 'cart_amount': cart_amount}
     else:
         context = {'title': '天天生鲜 - 首页', 'sectop': '0'}
     # 每一类商品：最新 + 点击最多
@@ -37,9 +41,11 @@ def goods_list(request, cat):
     # paginator = Paginator(goods, 4)
     # page = paginator.page(1)
     if is_login == '1':
-        context = {'title': '天天生鲜 - 分类', 'sectop': '0',
-                   'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')), 'category': category,
-                   'new_list': new_list, 'goods': goods, 'loop_num': loop_num}
+        user = get_object_or_404(TTSXUser, pk=request.session.get('login_id'))
+        # 通过聚合函数，获取同一用户所有的商品数
+        cart_amount = CartInfo.objects.filter(user=user).aggregate(Sum('count')).get('count__sum')
+        context = {'title': '天天生鲜 - 分类', 'sectop': '0', 'category': category, 'user': user,
+                   'cart_amount': cart_amount, 'new_list': new_list, 'goods': goods, 'loop_num': loop_num}
     else:
         context = {'title': '天天生鲜 - 分类', 'sectop': '0', 'category': category,
                    'new_list': new_list, 'goods': goods, 'loop_num': loop_num}
@@ -80,8 +86,11 @@ def detail(request, gid):
     goods.save()
     new_list = goods.category.goodsinfo_set.order_by('-id')[:2]
     if is_login == '1':
+        user = get_object_or_404(TTSXUser, pk=request.session.get('login_id'))
+        # 通过聚合函数，获取同一用户所有的商品数
+        cart_amount = CartInfo.objects.filter(user=user).aggregate(Sum('count')).get('count__sum')
         context = {'title': '天天生鲜 - 分类', 'sectop': '0',
-                   'user': get_object_or_404(TTSXUser, pk=request.session.get('login_id')),
+                   'user': user, 'cart_amount': cart_amount,
                    'goods': goods, 'new_list': new_list}
     else:
         context = {'title': '天天生鲜 - 分类', 'sectop': '0',

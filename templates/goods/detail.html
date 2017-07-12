@@ -34,11 +34,25 @@
                 num = parseInt($amount.val()) - 1;
                 $amount.val(num).blur()
             });
+        });
 
-            function add_cart() {
-                alert("ok")
+        {# 添加到购物车 #}
+        function add_cart(gid) {
+            if ('{{ request.session.is_login }}' === '1'){  {# 登录了 #}
+                {# 购物车数字加一，并往数据库添加一条数据 #}
+                $.post('/cart/add_cart/', {'uid': {{ user.id }}, 'gid': gid,  'gcount': $("#amount").val(), "csrfmiddlewaretoken": '{{ csrf_token }}'}, function (data) {
+                    if(data.success === '1'){
+                        $("#show_count").text(parseInt($("#show_count").text()) + parseInt($("#amount").val()));
+                        alert('添加成功')
+                    }else {
+                        alert('添加失败，请重试')
+                    }
+                });
+            }else {    {# 没登录 #}
+                {# 先跳转登录界面，然后在执行上面登录后的操作 #}
+                location.href = '{% url "usercenter:login" %}'
             }
-        })
+        }
 
     </script>
 
@@ -57,7 +71,7 @@
         </div>
         <div class="guest_cart fr">
             <a href="#" class="cart_name fl">我的购物车</a>
-            <div class="goods_count fl" id="show_count">1</div>
+            <div class="goods_count fl" id="show_count">{{ cart_amount|default:0 }}</div>
         </div>
     </div>
 
@@ -116,7 +130,7 @@
 			<div class="total">总价：<em>{{ goods.price }}元</em></div>
 			<div class="operate_btn">
 				<a href="javascript:;" class="buy_btn">立即购买</a>
-				<a href="javascript:add_cart();" class="add_cart" id="add_cart">加入购物车</a>
+				<a href="javascript:add_cart({{ goods.id }});" class="add_cart" id="add_cart">加入购物车</a>
 			</div>
 		</div>
 	</div>
@@ -157,27 +171,26 @@
 
 	<div class="add_jump"></div>
 
-	<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
-	<script type="text/javascript">
-		var $add_x = $('#add_cart').offset().top;
-		var $add_y = $('#add_cart').offset().left;
-
-		var $to_x = $('#show_count').offset().top;
-		var $to_y = $('#show_count').offset().left;
-
-		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
-		$('#add_cart').click(function(){
-			$(".add_jump").stop().animate({
-				'left': $to_y+7,
-				'top': $to_x+7},
-				"fast", function() {
-					$(".add_jump").fadeOut('fast',function(){
-						$('#show_count').html(2);
-					});
-
-			});
-		})
-	</script>
+{#	<script type="text/javascript">#}
+{#		var $add_x = $('#add_cart').offset().top;#}
+{#		var $add_y = $('#add_cart').offset().left;#}
+{##}
+{#		var $to_x = $('#show_count').offset().top;#}
+{#		var $to_y = $('#show_count').offset().left;#}
+{##}
+{#		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})#}
+{#		$('#add_cart').click(function(){#}
+{#			$(".add_jump").stop().animate({#}
+{#				'left': $to_y+7,#}
+{#				'top': $to_x+7},#}
+{#				"fast", function() {#}
+{#					$(".add_jump").fadeOut('fast',function(){#}
+{#						$('#show_count').html(2);#}
+{#					});#}
+{##}
+{#			});#}
+{#		})#}
+{#	</script>#}
 
 
 {% endblock %}

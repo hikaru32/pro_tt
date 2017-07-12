@@ -7,4 +7,4 @@ from goods.models import GoodsInfo
 class CartInfo(models.Model):
     user = models.ForeignKey(TTSXUser)
     goods = models.ForeignKey(GoodsInfo)
-    count = models.IntegerField()
+    count = models.IntegerField(default=0)
